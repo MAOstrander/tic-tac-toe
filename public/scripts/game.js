@@ -4,6 +4,12 @@
   const ws = io.connect();
   ws.on('connect', () => {
     console.log("Signature socket, you're ready to rock-it");
+
+  });
+
+  ws.on('moved', (newMove) => {
+    console.log(newMove);
+    // buildBoard(newMove);
   });
 
   const player1 = 'X';
@@ -49,7 +55,15 @@
     const square = event.target;
 
     if (!square.hasAttribute('data-cell') && !gameEnd) {
+
       markSquare(square, currentPlayer);
+
+      const move = {
+        board: board,
+        player: currentPlayer
+      };
+      ws.emit('validMove', move);
+
       console.log("SQUARE", square);
 
       gameEnd = didYouWin(currentPlayer);
