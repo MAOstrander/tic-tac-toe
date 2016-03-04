@@ -1,0 +1,11 @@
+td {
+  border: 2px solid black;
+  color: white;
+}
+
+td[data-cell='X'] {
+  color: red;
+}
+td[data-cell='O'] {
+  color: blue;
+}
