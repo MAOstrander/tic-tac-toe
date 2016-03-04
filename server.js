@@ -20,3 +20,7 @@ app.get('/', (req, res) => {
 server.listen(PORT, () => {
   console.log("HEY, You've got a running server on port ", PORT);
 });
+
+ws.on('connection', socket => {
+  console.log("Socket to me:", socket.id);
+})

@@ -1,9 +1,15 @@
 ;(function () {
   'use strict';
 
+  const ws = io.connect();
+  ws.on('connect', () => {
+    console.log("Signature socket, you're ready to rock-it");
+  });
+
   const player1 = 'X';
   const player2 = 'O';
   let currentPlayer = player1;
+  let gameEnd = false;
   var board = {
     'A': '', 'B':'', 'C':'',
     'D': '', 'E':'', 'F':'',
@@ -20,16 +26,6 @@
   }
 
   function didYouWin (player) {
-    const moves = document.querySelectorAll(`[data-cell="${player}"]`);
-    let moveArray = []
-    // console.log("Where is this player", moves);
-    for (var i = 0; i < moves.length; i++) {
-      moveArray.push(moves[i].id);
-    }
-    console.log("moveArray", moveArray);
-
-    console.log("BOARD STATE", board);
-
     if (
       // Horizontal matches
       (board.A === player && board.B === player && board.C === player) ||
@@ -44,19 +40,23 @@
       (board.C === player && board.E === player && board.G === player)
     ) {
       console.log(`Congrats ${player}, you win!`);
+      return true;
     }
+      return false;
   }
 
   document.addEventListener('click', (event) => {
     const square = event.target;
 
-    if (!square.hasAttribute('data-cell')) {
+    if (!square.hasAttribute('data-cell') && !gameEnd) {
       markSquare(square, currentPlayer);
       console.log("SQUARE", square);
 
-      didYouWin(currentPlayer);
+      gameEnd = didYouWin(currentPlayer);
 
-      if (currentPlayer === player1) {
+      if (gameEnd) {
+        alert(`Congrats ${currentPlayer}, you win!`);
+      } else if (currentPlayer === player1) {
         currentPlayer = player2;
       } else if (currentPlayer === player2) {
         currentPlayer = player1;
