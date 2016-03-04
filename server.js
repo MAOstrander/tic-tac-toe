@@ -29,8 +29,8 @@ ws.on('connection', socket => {
   socket.on('validMove', (move) => {
     console.log("Made a move", move.board);
     console.log("who moved", move.player);
-    ws.sockets.emit('moved', move);
-    // socket.broadcast.emit('moved', move);
+    // ws.sockets.emit('moved', move);
+    socket.broadcast.emit('moved', move);
     console.log(">.<");
   })
 

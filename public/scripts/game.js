@@ -7,9 +7,24 @@
 
   });
 
+
   ws.on('moved', (newMove) => {
-    console.log(newMove);
-    // buildBoard(newMove);
+    console.log("newMove", newMove);
+    board = newMove.board;
+    console.log("board", board);
+    for (var thing in board) {
+      console.log("thing", board[thing]);
+      if(board[thing]) {
+        console.log("ANY VALUES?");
+        markSquare(document.getElementById(thing), board[thing])
+      }
+    }
+
+    if (newMove.player === player1) {
+        currentPlayer = player2;
+      } else if (currentPlayer === player2) {
+        currentPlayer = player1;
+      }
   });
 
   const player1 = 'X';
@@ -60,6 +75,7 @@
 
       const move = {
         board: board,
+        square: square,
         player: currentPlayer
       };
       ws.emit('validMove', move);
