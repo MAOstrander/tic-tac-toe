@@ -1,34 +1,9 @@
 ;(function () {
   'use strict';
 
-  const ws = io.connect();
-  ws.on('connect', () => {
-    console.log("Signature socket, you're ready to rock-it");
-
-  });
-
-
-  ws.on('moved', (newMove) => {
-    console.log("newMove", newMove);
-    board = newMove.board;
-    console.log("board", board);
-    for (var thing in board) {
-      console.log("thing", board[thing]);
-      if(board[thing]) {
-        console.log("ANY VALUES?");
-        markSquare(document.getElementById(thing), board[thing])
-      }
-    }
-
-    if (newMove.player === player1) {
-        currentPlayer = player2;
-      } else if (currentPlayer === player2) {
-        currentPlayer = player1;
-      }
-  });
-
   const player1 = 'X';
   const player2 = 'O';
+  let canMove = true;
   let currentPlayer = player1;
   let gameEnd = false;
   var board = {
@@ -36,6 +11,32 @@
     'D': '', 'E':'', 'F':'',
     'G': '', 'H':'', 'I': ''
   }
+
+  const ws = io.connect();
+  ws.on('connect', () => {
+    console.log("Signature socket, you're ready to rock-it");
+  });
+
+  ws.on('moved', (newMove) => {
+    // Update Board State
+    board = newMove.board;
+
+    // Make sure boards match on both sides
+    for (var thing in board) {
+      if(board[thing]) {
+        markSquare(document.getElementById(thing), board[thing])
+      }
+    }
+
+    // Make sure players alternate
+    if (newMove.player === player1) {
+        currentPlayer = player2;
+      } else if (currentPlayer === player2) {
+        currentPlayer = player1;
+      }
+
+    canMove = true;
+  });
 
   function markSquare (space, player) {
     space.textContent = player;
@@ -68,10 +69,12 @@
 
   document.addEventListener('click', (event) => {
     const square = event.target;
+    console.log("TYPE", event);
 
-    if (!square.hasAttribute('data-cell') && !gameEnd) {
+    if (!square.hasAttribute('data-cell') && !gameEnd && canMove && square.tagName === 'TD') {
 
       markSquare(square, currentPlayer);
+      canMove = false;
 
       const move = {
         board: board,
@@ -80,10 +83,7 @@
       };
       ws.emit('validMove', move);
 
-      console.log("SQUARE", square);
-
       gameEnd = didYouWin(currentPlayer);
-
       if (gameEnd) {
         alert(`Congrats ${currentPlayer}, you win!`);
       } else if (currentPlayer === player1) {
