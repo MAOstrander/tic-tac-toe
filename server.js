@@ -21,17 +21,38 @@ server.listen(PORT, () => {
   console.log("HEY, You've got a running server on port ", PORT);
 });
 
-const activeGames = [];
+let activeGames = 0;
 
 ws.on('connection', socket => {
+  ws.sockets.connected[socket.id].emit('whoDis', socket.id);
+
   console.log("Socket to me:", socket.id);
+  activeGames++
+  console.log("Connected Users:", activeGames);
+
+  socket.on('disconnect', () => {
+    activeGames--;
+    console.log("Connected Users:", activeGames);
+  })
+
+  socket.on('create', () => {
+    let theRoom = activeGames;
+    console.log("Yay?", socket.id);
+    if (activeGames % 2 !== 0) {
+      socket.join(`${theRoom}`);
+      ws.sockets.in(`${theRoom}`).emit('test', theRoom);
+    } else {
+      theRoom = theRoom - 1
+      socket.join(`${theRoom}`);
+      ws.sockets.in(`${theRoom}`).emit('test', theRoom);
+    }
+  })
 
   socket.on('validMove', (move) => {
-    console.log("Made a move", move.board);
-    console.log("who moved", move.player);
     // ws.sockets.emit('moved', move);
-    socket.broadcast.emit('moved', move);
-    console.log(">.<");
+    // socket.broadcast.emit('moved', move); // Players take turns, but all play the same game
+    ws.sockets.in(move.room).emit('moved', move); // This allows multiplayer, but it's a race
+    // ws.in(move.room).broadcast.emit('moved', move);
   })
 
 })

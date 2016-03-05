@@ -1,6 +1,7 @@
 ;(function () {
   'use strict';
 
+  let gameInfo = {};
   const player1 = 'X';
   const player2 = 'O';
   let canMove = true;
@@ -14,8 +15,17 @@
 
   const ws = io.connect();
   ws.on('connect', () => {
-    console.log("Signature socket, you're ready to rock-it");
+    ws.emit('create');
   });
+
+  ws.on('test', (whichRoom) => {
+    gameInfo.myRoom = whichRoom;
+    console.log("whichRoom", gameInfo.myRoom);
+  })
+  ws.on('whoDis', (sockID) => {
+    gameInfo.whoMe = sockID;
+    console.log("sockID", gameInfo.whoMe);
+  })
 
   ws.on('moved', (newMove) => {
     // Update Board State
@@ -28,15 +38,23 @@
       }
     }
 
-    // Make sure players alternate
-    if (newMove.player === player1) {
+    gameEnd = didYouWin(newMove.player);
+
+    if (gameEnd) {
+      alert(`Sorry! You Lost!`);
+    } else {
+      swapPlayer(newMove.player)
+      canMove = true;
+    }
+  });
+
+  function swapPlayer (current) {
+        if (current === player1) {
         currentPlayer = player2;
-      } else if (currentPlayer === player2) {
+      } else if (current === player2) {
         currentPlayer = player1;
       }
-
-    canMove = true;
-  });
+  }
 
   function markSquare (space, player) {
     space.textContent = player;
@@ -61,7 +79,6 @@
       (board.A === player && board.E === player && board.I === player) ||
       (board.C === player && board.E === player && board.G === player)
     ) {
-      console.log(`Congrats ${player}, you win!`);
       return true;
     }
       return false;
@@ -69,28 +86,28 @@
 
   document.addEventListener('click', (event) => {
     const square = event.target;
-    console.log("TYPE", event);
 
     if (!square.hasAttribute('data-cell') && !gameEnd && canMove && square.tagName === 'TD') {
 
       markSquare(square, currentPlayer);
-      canMove = false;
 
+      canMove = false;
       const move = {
         board: board,
         square: square,
-        player: currentPlayer
+        player: currentPlayer,
+        room: myRoom
       };
       ws.emit('validMove', move);
 
       gameEnd = didYouWin(currentPlayer);
+
       if (gameEnd) {
         alert(`Congrats ${currentPlayer}, you win!`);
-      } else if (currentPlayer === player1) {
-        currentPlayer = player2;
-      } else if (currentPlayer === player2) {
-        currentPlayer = player1;
+      } else {
+        swapPlayer(currentPlayer);
       }
+
     }
   })
 
