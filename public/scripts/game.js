@@ -19,8 +19,9 @@
   });
 
   ws.on('test', (whichRoom) => {
+    console.log("whichRoom", whichRoom);
     gameInfo.myRoom = whichRoom;
-    console.log("whichRoom", gameInfo.myRoom);
+    console.log("whichRoom2", gameInfo.myRoom);
   })
   ws.on('whoDis', (sockID) => {
     gameInfo.whoMe = sockID;
@@ -96,7 +97,7 @@
         board: board,
         square: square,
         player: currentPlayer,
-        room: myRoom
+        room: gameInfo.myRoom
       };
       ws.emit('validMove', move);
 
