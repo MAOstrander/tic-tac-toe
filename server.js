@@ -13,6 +13,10 @@ app.use(express.static('public'));
 
 
 app.get('/', (req, res) => {
+  res.render('lobby');
+})
+
+app.get('/game', (req, res) => {
   res.render('index');
 })
 
